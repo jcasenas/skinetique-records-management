@@ -1,0 +1,82 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\StockIn;
+use App\Models\Supplier;
+use App\Models\StockAdjustment;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+
+class StockInController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $query = StockIn::with(['product', 'supplier', 'employee'])
+            ->latest('stock_in_date')
+            ->latest('id');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('product', fn ($q2) =>
+                      $q2->where('name', 'like', "%{$search}%")
+                  )
+                  ->orWhereHas('supplier', fn ($q2) =>
+                      $q2->where('name', 'like', "%{$search}%")
+                  );
+            });
+        }
+
+        $stockIns  = $query->paginate(12)->withQueryString();
+        $products  = Product::orderBy('name')->get();
+        $suppliers = Supplier::orderBy('name')->get();
+        $adjustments = StockAdjustment::with(['product', 'employee'])
+            ->latest('adjustment_date')
+            ->latest('id')
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('admin.stocks.index', compact('stockIns', 'products', 'suppliers', 'adjustments'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'product_id'    => ['required', 'exists:products,id'],
+            'supplier_id'   => ['required', 'exists:suppliers,id'],
+            'quantity'      => ['required', 'integer', 'min:1'],
+            'stock_in_date' => ['required', 'date', 'before_or_equal:today'],
+        ], [
+            'quantity.min'              => 'Quantity must be at least 1.',
+            'stock_in_date.before_or_equal' => 'Stock-in date cannot be in the future.',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            // Record the stock-in
+            StockIn::create([
+                'product_id'    => $request->product_id,
+                'supplier_id'   => $request->supplier_id,
+                'employee_id'   => Auth::guard('employee')->id(),
+                'quantity'      => $request->quantity,
+                'stock_in_date' => $request->stock_in_date,
+            ]);
+
+            // Update product quantity and status (mirrors StockInObserver logic)
+            $product = Product::findOrFail($request->product_id);
+            $product->quantity += $request->quantity;
+            if ($product->quantity > 0) {
+                $product->status = 'available';
+            }
+            $product->save();
+        });
+
+        return redirect()->route('admin.stocks.index')
+            ->with('success', 'Stock recorded successfully. Product quantity updated.');
+    }
+}
