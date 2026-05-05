@@ -1,3 +1,7 @@
+@php
+    dd($order->orderLines, $order->returns);
+@endphp
+
 @extends('admin.layout')
 
 @section('title', 'Order ' . $order->order_label)
