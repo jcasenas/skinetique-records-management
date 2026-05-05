@@ -155,6 +155,8 @@ class OrderController extends Controller
             'returns.employee',
         ]);
 
+        dd($order->orderLines, $order->id);
+
         $totalPaid      = $order->payments->sum('amount');
         $totalRemaining = $order->total - $totalPaid;
 
