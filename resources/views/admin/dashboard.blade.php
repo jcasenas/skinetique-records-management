@@ -55,19 +55,17 @@
         margin-top: 4px;
     }
 
-    /* ── Shortcuts ── */
+    /* ── Section label ── */
     .section-title {
-        font-size: 15px;
+        font-size: 12px;
         font-weight: 700;
-        color: var(--text);
+        color: var(--muted);
         margin-bottom: 16px;
-        letter-spacing: .01em;
         text-transform: uppercase;
         letter-spacing: .06em;
-        font-size: 12px;
-        color: var(--muted);
     }
 
+    /* ── Shortcuts ── */
     .shortcut-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -96,8 +94,7 @@
     }
 
     .shortcut-icon {
-        width: 56px;
-        height: 56px;
+        width: 56px; height: 56px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -106,8 +103,7 @@
     }
 
     .shortcut-icon svg {
-        width: 26px;
-        height: 26px;
+        width: 26px; height: 26px;
         stroke: var(--primary);
         stroke-width: 1.8;
     }
@@ -118,6 +114,176 @@
         text-align: center;
         line-height: 1.3;
         color: var(--text);
+    }
+
+    /* ── Charts section ── */
+    .charts-section {
+        margin-top: 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .chart-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(94,32,57,.06);
+        padding: 20px 22px 18px;
+    }
+
+    .chart-card-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .chart-card-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .chart-card-sub {
+        font-size: 11px;
+        color: var(--muted);
+    }
+
+    /* Bar chart */
+    .bar-chart {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        height: 110px;
+    }
+
+    .bar-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        height: 100%;
+        justify-content: flex-end;
+    }
+
+    .bar-value-label {
+        font-size: 9px;
+        color: var(--muted);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .bar-fill {
+        width: 100%;
+        background: linear-gradient(180deg, #a04065 0%, #7b2d4e 100%);
+        border-radius: 5px 5px 0 0;
+        min-height: 3px;
+        transition: opacity .15s;
+        position: relative;
+    }
+
+    .bar-fill:hover { opacity: .8; }
+    .bar-fill.zero  { background: #f0e6ec; }
+
+    .bar-label {
+        font-size: 10px;
+        color: var(--muted);
+        font-weight: 500;
+        margin-top: 6px;
+        white-space: nowrap;
+    }
+
+    /* Donut chart */
+    .donut-wrap {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .donut-svg { flex-shrink: 0; }
+
+    .donut-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text);
+    }
+
+    .legend-dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .legend-count {
+        margin-left: auto;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--text);
+    }
+
+    /* Horizontal bar chart for top products */
+    .hbar-chart {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .hbar-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .hbar-name {
+        font-size: 11px;
+        color: var(--text);
+        font-weight: 500;
+        width: 110px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .hbar-track {
+        flex: 1;
+        height: 10px;
+        background: #f5e6ed;
+        border-radius: 99px;
+        overflow: hidden;
+    }
+
+    .hbar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7b2d4e 0%, #a04065 100%);
+        border-radius: 99px;
+        transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
+
+    .hbar-qty {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--primary);
+        width: 30px;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .chart-empty {
+        font-size: 13px;
+        color: var(--muted);
+        text-align: center;
+        padding: 20px 0;
     }
 
     /* ── RIGHT: Activity feed ── */
@@ -144,7 +310,6 @@
         color: var(--text);
     }
 
-    /* Notification badge */
     .notif-badge {
         display: inline-flex;
         align-items: center;
@@ -158,8 +323,7 @@
     }
 
     .notif-dot {
-        width: 7px;
-        height: 7px;
+        width: 7px; height: 7px;
         border-radius: 50%;
         background: var(--primary);
         animation: pulse 1.8s infinite;
@@ -170,11 +334,7 @@
         50%       { opacity: .5; transform: scale(.8); }
     }
 
-    /* Activity list */
-    .activity-list {
-        max-height: 520px;
-        overflow-y: auto;
-    }
+    .activity-list { max-height: 520px; overflow-y: auto; }
 
     .activity-item {
         display: flex;
@@ -188,10 +348,8 @@
     .activity-item:last-child { border-bottom: none; }
     .activity-item:hover { background: #fdf5f8; }
 
-    /* Type icon */
     .activity-icon {
-        width: 34px;
-        height: 34px;
+        width: 34px; height: 34px;
         border-radius: 10px;
         display: flex;
         align-items: center;
@@ -202,21 +360,18 @@
 
     .activity-icon svg { width: 16px; height: 16px; }
 
-    /* Original three */
     .icon-order      { background: #e8f5e9; }
     .icon-order      svg { stroke: #2e7d32; }
     .icon-payment    { background: #e3f2fd; }
     .icon-payment    svg { stroke: #1565c0; }
     .icon-stock      { background: #fff8e1; }
     .icon-stock      svg { stroke: #f57f17; }
-
-    /* New two */
     .icon-adjustment { background: #fff3e0; }
     .icon-adjustment svg { stroke: #e65100; }
     .icon-return     { background: #f3e5f5; }
     .icon-return     svg { stroke: #6a1b9a; }
 
-    .activity-body { flex: 1; min-width: 0; }
+    .activity-body  { flex: 1; min-width: 0; }
 
     .activity-label {
         font-size: 13px;
@@ -241,12 +396,7 @@
         flex-shrink: 0;
     }
 
-    .activity-amount {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--primary);
-    }
-
+    .activity-amount { font-size: 13px; font-weight: 600; color: var(--primary); }
     .activity-amount.negative { color: #856404; }
 
     .activity-time {
@@ -276,15 +426,10 @@
         flex-wrap: wrap;
     }
 
-    .pending-banner-left {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+    .pending-banner-left { display: flex; align-items: center; gap: 10px; }
 
     .pending-banner-icon {
-        width: 36px;
-        height: 36px;
+        width: 36px; height: 36px;
         background: #fde5c3;
         border-radius: 10px;
         display: flex;
@@ -294,7 +439,6 @@
     }
 
     .pending-banner-icon svg { width: 18px; height: 18px; stroke: #c47a1e; }
-
     .pending-banner-text { font-size: 13px; font-weight: 600; color: #7a4d1e; }
     .pending-banner-sub  { font-size: 12px; color: #c47a1e; }
 
@@ -350,6 +494,7 @@
 
         {{-- ════════ LEFT COLUMN ════════ --}}
         <div>
+
             {{-- KPI Cards --}}
             <div class="section-title">Today's Overview</div>
             <div class="kpi-grid">
@@ -404,7 +549,163 @@
                 </a>
 
             </div>
-        </div>
+
+            {{-- ════ CHARTS ════ --}}
+            <div class="charts-section">
+
+                {{-- ── Chart 1: Monthly Revenue (last 6 months) ── --}}
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <span class="chart-card-title">Monthly Revenue</span>
+                        <span class="chart-card-sub">Last 6 months · fulfilled orders</span>
+                    </div>
+
+                    @php
+                        $maxRev = $monthlyRevenue->max('revenue') ?: 1;
+                    @endphp
+
+                    @if ($maxRev <= 1)
+                        <div class="chart-empty">No fulfilled orders in the last 6 months.</div>
+                    @else
+                        <div class="bar-chart" id="revenueChart">
+                            @foreach ($monthlyRevenue as $point)
+                                @php
+                                    $heightPct = $maxRev > 0 ? round(($point['revenue'] / $maxRev) * 100) : 0;
+                                    $isZero    = $point['revenue'] == 0;
+                                @endphp
+                                <div class="bar-col">
+                                    @if (! $isZero)
+                                        <span class="bar-value-label">
+                                            ₱{{ $point['revenue'] >= 1000
+                                                ? number_format($point['revenue'] / 1000, 1) . 'k'
+                                                : number_format($point['revenue'], 0) }}
+                                        </span>
+                                    @else
+                                        <span class="bar-value-label" style="color:transparent;">0</span>
+                                    @endif
+                                    <div
+                                        class="bar-fill {{ $isZero ? 'zero' : '' }}"
+                                        style="height: {{ max($heightPct, 3) }}%;"
+                                        title="₱{{ number_format($point['revenue'], 2) }}">
+                                    </div>
+                                    <span class="bar-label">{{ $point['label'] }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                {{-- ── Chart 2: Orders by Status ── --}}
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <span class="chart-card-title">Active Orders by Status</span>
+                        <span class="chart-card-sub">Unarchived orders</span>
+                    </div>
+
+                    @php
+                        $totalStatusOrders = array_sum($statusCounts);
+                    @endphp
+
+                    @if ($totalStatusOrders === 0)
+                        <div class="chart-empty">No active orders at the moment.</div>
+                    @else
+                        @php
+                            // Donut segments
+                            $colors  = ['#856404', '#1565c0', '#2e7d32'];
+                            $labels  = ['Pending', 'Partial', 'Fully Paid'];
+                            $values  = array_values($statusCounts);
+                            $cx = 54; $cy = 54; $r = 40; $stroke = 18;
+                            $circumference = 2 * M_PI * $r;
+                            $offset = 0;
+                            $segments = [];
+                            foreach ($values as $i => $v) {
+                                $dash = $totalStatusOrders > 0 ? ($v / $totalStatusOrders) * $circumference : 0;
+                                $segments[] = [
+                                    'dash'   => $dash,
+                                    'gap'    => $circumference - $dash,
+                                    'offset' => $offset,
+                                    'color'  => $colors[$i],
+                                    'label'  => $labels[$i],
+                                    'value'  => $v,
+                                ];
+                                $offset += $dash;
+                            }
+                        @endphp
+
+                        <div class="donut-wrap">
+                            <svg class="donut-svg" width="108" height="108" viewBox="0 0 108 108">
+                                {{-- Background ring --}}
+                                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="{{ $r }}"
+                                    fill="none" stroke="#f5e6ed" stroke-width="{{ $stroke }}"/>
+                                {{-- Segments --}}
+                                @foreach ($segments as $seg)
+                                    @if ($seg['value'] > 0)
+                                        <circle
+                                            cx="{{ $cx }}" cy="{{ $cy }}" r="{{ $r }}"
+                                            fill="none"
+                                            stroke="{{ $seg['color'] }}"
+                                            stroke-width="{{ $stroke }}"
+                                            stroke-dasharray="{{ round($seg['dash'], 2) }} {{ round($seg['gap'], 2) }}"
+                                            stroke-dashoffset="{{ round(-$seg['offset'], 2) }}"
+                                            transform="rotate(-90 {{ $cx }} {{ $cy }})"
+                                            style="transition: stroke-dasharray .4s ease;">
+                                        </circle>
+                                    @endif
+                                @endforeach
+                                {{-- Centre label --}}
+                                <text x="{{ $cx }}" y="{{ $cy - 4 }}"
+                                    text-anchor="middle" font-size="16" font-weight="700" fill="#3a1a28">
+                                    {{ $totalStatusOrders }}
+                                </text>
+                                <text x="{{ $cx }}" y="{{ $cy + 12 }}"
+                                    text-anchor="middle" font-size="9" fill="#9e7286">
+                                    orders
+                                </text>
+                            </svg>
+
+                            <div class="donut-legend">
+                                @foreach ($segments as $seg)
+                                    <div class="legend-item">
+                                        <span class="legend-dot" style="background:{{ $seg['color'] }};"></span>
+                                        <span>{{ $seg['label'] }}</span>
+                                        <span class="legend-count">{{ $seg['value'] }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- ── Chart 3: Top 5 Products by Units Sold ── --}}
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <span class="chart-card-title">Top Products</span>
+                        <span class="chart-card-sub">By units sold · fulfilled orders</span>
+                    </div>
+
+                    @if ($topProducts->isEmpty())
+                        <div class="chart-empty">No sales data yet.</div>
+                    @else
+                        @php $maxQty = $topProducts->max('qty') ?: 1; @endphp
+                        <div class="hbar-chart">
+                            @foreach ($topProducts as $row)
+                                <div class="hbar-row">
+                                    <span class="hbar-name" title="{{ $row['name'] }}">{{ $row['name'] }}</span>
+                                    <div class="hbar-track">
+                                        <div class="hbar-fill"
+                                             style="width: {{ round(($row['qty'] / $maxQty) * 100) }}%;">
+                                        </div>
+                                    </div>
+                                    <span class="hbar-qty">{{ $row['qty'] }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+            </div>{{-- /charts-section --}}
+
+        </div>{{-- /left column --}}
 
         {{-- ════════ RIGHT COLUMN: Activity Feed ════════ --}}
         <div class="activity-card">
@@ -422,7 +723,6 @@
                 @forelse ($recentActivity as $event)
                     <div class="activity-item">
 
-                        {{-- Type icon --}}
                         <div class="activity-icon icon-{{ $event['type'] }}">
                             @if ($event['type'] === 'order')
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -445,7 +745,6 @@
                                     <line x1="12" y1="17" x2="12.01" y2="17"/>
                                 </svg>
                             @else
-                                {{-- return --}}
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="1 4 1 10 7 10"/>
                                     <path d="M3.51 15a9 9 0 1 0 .49-4"/>
