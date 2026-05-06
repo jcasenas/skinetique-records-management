@@ -39,14 +39,14 @@ class StockInController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        // Pending approvals (owner review queue)
+        // Pending stock-ins (owner review queue)
         $pendingStockIns = StockIn::with(['product', 'supplier', 'employee'])
             ->where('status', 'pending')
             ->latest('id')
             ->paginate(12)
             ->withQueryString();
 
-        // Rejected records
+        // Rejected stock-ins
         $rejectedStockIns = StockIn::with(['product', 'supplier', 'employee'])
             ->where('status', 'rejected')
             ->latest('id')
@@ -56,8 +56,24 @@ class StockInController extends Controller
         $products  = Product::orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
 
+        // Approved adjustments shown in the Adjustments history tab
         $adjustments = StockAdjustment::with(['product', 'employee'])
+            ->where('status', 'approved')
             ->latest('adjustment_date')
+            ->latest('id')
+            ->paginate(12)
+            ->withQueryString();
+
+        // Pending adjustments for owner approval queue
+        $pendingAdjustments = StockAdjustment::with(['product', 'employee'])
+            ->where('status', 'pending')
+            ->latest('id')
+            ->paginate(12)
+            ->withQueryString();
+
+        // Rejected adjustments
+        $rejectedAdjustments = StockAdjustment::with(['product', 'employee'])
+            ->where('status', 'rejected')
             ->latest('id')
             ->paginate(12)
             ->withQueryString();
@@ -69,6 +85,8 @@ class StockInController extends Controller
             'products',
             'suppliers',
             'adjustments',
+            'pendingAdjustments',
+            'rejectedAdjustments',
         ));
     }
 
@@ -84,7 +102,6 @@ class StockInController extends Controller
             'stock_in_date.before_or_equal' => 'Stock-in date cannot be in the future.',
         ]);
 
-        // Save as pending — quantity is NOT updated until owner approves
         StockIn::create([
             'product_id'    => $request->product_id,
             'supplier_id'   => $request->supplier_id,

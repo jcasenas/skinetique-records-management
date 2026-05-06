@@ -425,7 +425,7 @@
     @endif
 
     {{-- ── Pending approval banner (owner only) ── --}}
-    @if (Auth::guard('employee')->user()?->isOwner() && $pendingStockIns->total() > 0)
+    @if (Auth::guard('employee')->user()?->isOwner() && ($pendingStockIns->total() + $pendingAdjustments->total()) > 0)
         <div class="pending-banner">
             <div class="pending-banner-left">
                 <div class="pending-banner-icon">
@@ -437,7 +437,7 @@
                 </div>
                 <div>
                     <div class="pending-banner-text">
-                        {{ $pendingStockIns->total() }} stock-in {{ Str::plural('submission', $pendingStockIns->total()) }} awaiting your approval
+                        {{ $pendingStockIns->total() + $pendingAdjustments->total() }} stock {{ Str::plural('submission', $pendingStockIns->total() + $pendingAdjustments->total()) }} awaiting your approval
                     </div>
                     <div class="pending-banner-sub">Review and approve or reject each submission below</div>
                 </div>
@@ -506,10 +506,10 @@
             <div class="stock-stat-label">Total Units in Stock</div>
             <div class="stock-stat-value">{{ number_format($products->sum('quantity')) }}</div>
         </div>
-        @if ($pendingStockIns->total() > 0)
+        @if ($pendingStockIns->total() + $pendingAdjustments->total() > 0)
             <div class="stock-stat amber">
                 <div class="stock-stat-label">Pending Approval</div>
-                <div class="stock-stat-value">{{ number_format($pendingStockIns->total()) }}</div>
+                <div class="stock-stat-value">{{ number_format($pendingStockIns->total() + $pendingAdjustments->total()) }}</div>
             </div>
         @endif
         <div class="stock-stat warn">
@@ -525,8 +525,8 @@
         @if (Auth::guard('employee')->user()?->isOwner())
             <button class="tab-btn" id="btn-approvals" onclick="switchTab('approvals')">
                 Pending Approvals
-                @if ($pendingStockIns->total() > 0)
-                    <span class="tab-badge">{{ $pendingStockIns->total() }}</span>
+                @if ($pendingStockIns->total() + $pendingAdjustments->total() > 0)
+                    <span class="tab-badge">{{ $pendingStockIns->total() + $pendingAdjustments->total() }}</span>
                 @endif
             </button>
             <button class="tab-btn" id="btn-rejected" onclick="switchTab('rejected')">Rejected</button>
@@ -586,6 +586,10 @@
     {{-- ══ TAB: Pending Approvals (owner only) ══ --}}
     @if (Auth::guard('employee')->user()?->isOwner())
     <div class="tab-panel" id="tab-approvals">
+
+        {{-- ── Pending Stock-Ins ── --}}
+        @if ($pendingStockIns->total() > 0)
+        <p style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:12px;">Stock-In Submissions</p>
         <div class="table-wrap">
             <table>
                 <thead>
@@ -614,59 +618,87 @@
                             <td style="color:var(--muted); font-size:13px;">{{ $record->employee->full_name }}</td>
                             <td>
                                 <div class="action-cell">
-                                    {{-- Approve --}}
                                     <form method="POST" action="{{ route('admin.stocks.approve', $record) }}">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-approve">
-                                            ✓ Approve
-                                        </button>
+                                        <button type="submit" class="btn btn-sm btn-approve">✓ Approve</button>
                                     </form>
-
-                                    {{-- Reject — opens modal --}}
-                                    <button
-                                        class="btn btn-sm btn-reject"
-                                        onclick="openRejectModal({{ $record->id }})">
-                                        ✕ Reject
-                                    </button>
+                                    <button class="btn btn-sm btn-reject" onclick="openRejectModal('stockin', {{ $record->id }})">✕ Reject</button>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr class="empty-row">
-                            <td colspan="8">No pending stock-in submissions. All caught up!</td>
-                        </tr>
+                        <tr class="empty-row"><td colspan="8">No pending stock-in submissions.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+        @endif
 
-        <div class="pagination">
-            @if ($pendingStockIns->onFirstPage())
-                <span class="disabled">← Previous</span>
-            @else
-                <a href="{{ $pendingStockIns->previousPageUrl() }}">← Previous</a>
-            @endif
-            <span>Page {{ $pendingStockIns->currentPage() }} of {{ $pendingStockIns->lastPage() }}</span>
-            @if ($pendingStockIns->hasMorePages())
-                <a href="{{ $pendingStockIns->nextPageUrl() }}">Next →</a>
-            @else
-                <span class="disabled">Next →</span>
-            @endif
-        </div>
-    </div>
-
-    {{-- ══ TAB: Rejected ══ --}}
-    <div class="tab-panel" id="tab-rejected">
+        {{-- ── Pending Adjustments ── --}}
+        @if ($pendingAdjustments->total() > 0)
+        <p style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:12px; margin-top:{{ $pendingStockIns->total() > 0 ? '28px' : '0' }};">Adjustment Submissions</p>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>Date</th>
+                        <th>Submitted</th>
                         <th>Product</th>
-                        <th>Supplier</th>
-                        <th>Qty Requested</th>
+                        <th>Qty to Deduct</th>
+                        <th>Reason</th>
+                        <th>Current Stock</th>
+                        <th>Stock After</th>
                         <th>Submitted By</th>
-                        <th>Rejection Note</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($pendingAdjustments as $adj)
+                        <tr class="row-pending">
+                            <td>{{ $adj->adjustment_date->format('m/d/Y') }}</td>
+                            <td><span style="font-weight:600;">{{ $adj->product->name }}</span></td>
+                            <td><span class="qty-pill qty-pill-neg">−{{ number_format(abs($adj->quantity)) }}</span></td>
+                            <td><span class="reason-badge {{ $adj->reason }}">{{ ucfirst($adj->reason) }}</span></td>
+                            <td>{{ number_format($adj->product->quantity) }} units</td>
+                            <td style="color:#856404; font-weight:600;">
+                                {{ number_format(max(0, $adj->product->quantity - abs($adj->quantity))) }} units
+                            </td>
+                            <td style="color:var(--muted); font-size:13px;">{{ $adj->employee->full_name }}</td>
+                            <td>
+                                <div class="action-cell">
+                                    <form method="POST" action="{{ route('admin.stocks.adjustments.approve', $adj) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-approve">✓ Approve</button>
+                                    </form>
+                                    <button class="btn btn-sm btn-reject" onclick="openRejectModal('adjustment', {{ $adj->id }})">✕ Reject</button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr class="empty-row"><td colspan="8">No pending adjustment submissions.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @endif
+
+        @if ($pendingStockIns->total() === 0 && $pendingAdjustments->total() === 0)
+            <div style="background:#fff; border-radius:14px; padding:48px; text-align:center; font-size:14px; color:var(--muted); box-shadow:0 2px 12px rgba(94,32,57,.06);">
+                No pending submissions. All caught up!
+            </div>
+        @endif
+    </div>
+
+    {{-- ══ TAB: Rejected ══ --}}
+    <div class="tab-panel" id="tab-rejected">
+
+        {{-- Rejected Stock-Ins --}}
+        <p style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:12px;">Rejected Stock-Ins</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th><th>Product</th><th>Supplier</th>
+                        <th>Qty Requested</th><th>Submitted By</th><th>Rejection Note</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -677,31 +709,40 @@
                             <td>{{ $record->supplier->name }}</td>
                             <td><span class="qty-pill" style="background:#f5edf1; color:var(--muted);">{{ number_format($record->quantity) }}</span></td>
                             <td style="color:var(--muted); font-size:13px;">{{ $record->employee->full_name }}</td>
-                            <td style="font-size:13px; color:var(--muted); font-style:italic;">
-                                {{ $record->rejection_note ?? '—' }}
-                            </td>
+                            <td style="font-size:13px; color:var(--muted); font-style:italic;">{{ $record->rejection_note ?? '—' }}</td>
                         </tr>
                     @empty
-                        <tr class="empty-row">
-                            <td colspan="6">No rejected submissions.</td>
-                        </tr>
+                        <tr class="empty-row"><td colspan="6">No rejected stock-in submissions.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="pagination">
-            @if ($rejectedStockIns->onFirstPage())
-                <span class="disabled">← Previous</span>
-            @else
-                <a href="{{ $rejectedStockIns->previousPageUrl() }}">← Previous</a>
-            @endif
-            <span>Page {{ $rejectedStockIns->currentPage() }} of {{ $rejectedStockIns->lastPage() }}</span>
-            @if ($rejectedStockIns->hasMorePages())
-                <a href="{{ $rejectedStockIns->nextPageUrl() }}">Next →</a>
-            @else
-                <span class="disabled">Next →</span>
-            @endif
+        {{-- Rejected Adjustments --}}
+        <p style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:12px; margin-top:28px;">Rejected Adjustments</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th><th>Product</th><th>Qty</th>
+                        <th>Reason</th><th>Submitted By</th><th>Rejection Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($rejectedAdjustments as $adj)
+                        <tr>
+                            <td>{{ $adj->adjustment_date->format('m/d/Y') }}</td>
+                            <td><span style="font-weight:600;">{{ $adj->product->name }}</span></td>
+                            <td><span class="qty-pill qty-pill-neg">{{ number_format(abs($adj->quantity)) }} units</span></td>
+                            <td><span class="reason-badge {{ $adj->reason }}">{{ ucfirst($adj->reason) }}</span></td>
+                            <td style="color:var(--muted); font-size:13px;">{{ $adj->employee->full_name }}</td>
+                            <td style="font-size:13px; color:var(--muted); font-style:italic;">{{ $adj->rejection_note ?? '—' }}</td>
+                        </tr>
+                    @empty
+                        <tr class="empty-row"><td colspan="6">No rejected adjustments.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
     @endif
@@ -923,12 +964,12 @@
 </div>
 
 {{-- ══════════════════════════════
-     REJECT MODAL (owner only)
+     REJECT MODAL (owner only) — shared for stock-ins and adjustments
 ══════════════════════════════ --}}
 @if (Auth::guard('employee')->user()?->isOwner())
 <div class="modal-backdrop" id="rejectModal">
     <div class="modal modal-sm">
-        <div class="modal-title">Reject Stock-In</div>
+        <div class="modal-title" id="rejectModalTitle">Reject Submission</div>
         <div class="modal-sub">Optionally provide a note so the staff member knows why this was rejected.</div>
 
         <form method="POST" id="rejectForm">
@@ -974,10 +1015,15 @@
     });
 
     // ── Reject modal: set form action ────────────────────────
-    function openRejectModal(stockInId) {
-        const form = document.getElementById('rejectForm');
-        if (form) {
-            form.action = `/admin/stocks/${stockInId}/reject`;
+    function openRejectModal(type, id) {
+        const form  = document.getElementById('rejectForm');
+        const title = document.getElementById('rejectModalTitle');
+        if (type === 'stockin') {
+            form.action  = `/admin/stocks/${id}/reject`;
+            title.textContent = 'Reject Stock-In';
+        } else {
+            form.action  = `/admin/stocks/adjustments/${id}/reject`;
+            title.textContent = 'Reject Adjustment';
         }
         openModal('rejectModal');
     }

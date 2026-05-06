@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -21,18 +22,32 @@ class StockAdjustmentController extends Controller
             'adjustment_date' => ['required', 'date', 'before_or_equal:today'],
         ]);
 
-        DB::transaction(function () use ($request) {
-            StockAdjustment::create([
-                'product_id'      => $request->product_id,
-                'employee_id'     => Auth::guard('employee')->id(),
-                'quantity'        => -abs($request->quantity), // always stored negative
-                'reason'          => $request->reason,
-                'notes'           => $request->notes,
-                'adjustment_date' => $request->adjustment_date,
-            ]);
+        // Save as pending — quantity is NOT deducted until owner approves
+        StockAdjustment::create([
+            'product_id'      => $request->product_id,
+            'employee_id'     => Auth::guard('employee')->id(),
+            'quantity'        => -abs($request->quantity),
+            'reason'          => $request->reason,
+            'notes'           => $request->notes,
+            'adjustment_date' => $request->adjustment_date,
+            'status'          => 'pending',
+        ]);
 
-            $product = Product::findOrFail($request->product_id);
-            $product->quantity = max(0, $product->quantity - abs($request->quantity));
+        return redirect()->route('admin.stocks.index')
+            ->with('success', 'Stock adjustment submitted and is awaiting owner approval.');
+    }
+
+    public function approve(StockAdjustment $adjustment): RedirectResponse
+    {
+        if ($adjustment->status !== 'pending') {
+            return back()->with('error', 'This adjustment has already been actioned.');
+        }
+
+        DB::transaction(function () use ($adjustment) {
+            $adjustment->update(['status' => 'approved']);
+
+            $product = $adjustment->product;
+            $product->quantity = max(0, $product->quantity - abs($adjustment->quantity));
             if ($product->quantity === 0) {
                 $product->status = 'unavailable';
             }
@@ -40,6 +55,25 @@ class StockAdjustmentController extends Controller
         });
 
         return redirect()->route('admin.stocks.index')
-            ->with('success', 'Stock adjustment recorded. Product quantity updated.');
+            ->with('success', 'Adjustment approved. Product quantity updated.');
+    }
+
+    public function reject(Request $request, StockAdjustment $adjustment): RedirectResponse
+    {
+        if ($adjustment->status !== 'pending') {
+            return back()->with('error', 'This adjustment has already been actioned.');
+        }
+
+        $request->validate([
+            'rejection_note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $adjustment->update([
+            'status'         => 'rejected',
+            'rejection_note' => $request->rejection_note,
+        ]);
+
+        return redirect()->route('admin.stocks.index')
+            ->with('success', 'Adjustment rejected.');
     }
 }

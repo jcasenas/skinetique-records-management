@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -9,8 +10,14 @@ class StockAdjustment extends Model
     protected $table = 'stock_adjustments';
 
     protected $fillable = [
-        'product_id', 'employee_id', 'quantity',
-        'reason', 'notes', 'adjustment_date',
+        'product_id',
+        'employee_id',
+        'quantity',
+        'reason',
+        'notes',
+        'adjustment_date',
+        'status',
+        'rejection_note',
     ];
 
     protected function casts(): array
@@ -29,5 +36,20 @@ class StockAdjustment extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejected';
     }
 }

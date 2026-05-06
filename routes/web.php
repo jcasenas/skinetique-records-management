@@ -54,10 +54,12 @@ Route::middleware(AuthenticateEmployee::class)->group(function () {
         Route::post('/stocks',             [StockInController::class, 'store'])->name('stocks.store');
         Route::post('/stocks/adjustments', [StockAdjustmentController::class, 'store'])->name('stocks.adjustments.store');
 
-        // Stock approval — owner only
+        // Stock-in & adjustment approval — owner only
         Route::middleware(OwnerOnly::class)->group(function () {
-            Route::post('/stocks/{stockIn}/approve', [StockInController::class, 'approve'])->name('stocks.approve');
-            Route::post('/stocks/{stockIn}/reject',  [StockInController::class, 'reject'])->name('stocks.reject');
+            Route::post('/stocks/{stockIn}/approve',            [StockInController::class,        'approve'])->name('stocks.approve');
+            Route::post('/stocks/{stockIn}/reject',             [StockInController::class,        'reject'])->name('stocks.reject');
+            Route::post('/stocks/adjustments/{adjustment}/approve', [StockAdjustmentController::class, 'approve'])->name('stocks.adjustments.approve');
+            Route::post('/stocks/adjustments/{adjustment}/reject',  [StockAdjustmentController::class, 'reject'])->name('stocks.adjustments.reject');
         });
 
         // Customers
