@@ -33,16 +33,43 @@ class StockInController extends Controller
             });
         }
 
-        $stockIns  = $query->paginate(12)->withQueryString();
+        // Only show approved records in the history tab
+        $stockIns = (clone $query)
+            ->where('status', 'approved')
+            ->paginate(12)
+            ->withQueryString();
+
+        // Pending approvals (owner review queue)
+        $pendingStockIns = StockIn::with(['product', 'supplier', 'employee'])
+            ->where('status', 'pending')
+            ->latest('id')
+            ->paginate(12)
+            ->withQueryString();
+
+        // Rejected records
+        $rejectedStockIns = StockIn::with(['product', 'supplier', 'employee'])
+            ->where('status', 'rejected')
+            ->latest('id')
+            ->paginate(12)
+            ->withQueryString();
+
         $products  = Product::orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
+
         $adjustments = StockAdjustment::with(['product', 'employee'])
             ->latest('adjustment_date')
             ->latest('id')
             ->paginate(12)
             ->withQueryString();
 
-        return view('admin.stocks.index', compact('stockIns', 'products', 'suppliers', 'adjustments'));
+        return view('admin.stocks.index', compact(
+            'stockIns',
+            'pendingStockIns',
+            'rejectedStockIns',
+            'products',
+            'suppliers',
+            'adjustments',
+        ));
     }
 
     public function store(Request $request): RedirectResponse
@@ -53,23 +80,35 @@ class StockInController extends Controller
             'quantity'      => ['required', 'integer', 'min:1'],
             'stock_in_date' => ['required', 'date', 'before_or_equal:today'],
         ], [
-            'quantity.min'              => 'Quantity must be at least 1.',
+            'quantity.min'                  => 'Quantity must be at least 1.',
             'stock_in_date.before_or_equal' => 'Stock-in date cannot be in the future.',
         ]);
 
-        DB::transaction(function () use ($request) {
-            // Record the stock-in
-            StockIn::create([
-                'product_id'    => $request->product_id,
-                'supplier_id'   => $request->supplier_id,
-                'employee_id'   => Auth::guard('employee')->id(),
-                'quantity'      => $request->quantity,
-                'stock_in_date' => $request->stock_in_date,
-            ]);
+        // Save as pending — quantity is NOT updated until owner approves
+        StockIn::create([
+            'product_id'    => $request->product_id,
+            'supplier_id'   => $request->supplier_id,
+            'employee_id'   => Auth::guard('employee')->id(),
+            'quantity'      => $request->quantity,
+            'stock_in_date' => $request->stock_in_date,
+            'status'        => 'pending',
+        ]);
 
-            // Update product quantity and status (mirrors StockInObserver logic)
-            $product = Product::findOrFail($request->product_id);
-            $product->quantity += $request->quantity;
+        return redirect()->route('admin.stocks.index')
+            ->with('success', 'Stock-in submitted and is awaiting owner approval.');
+    }
+
+    public function approve(StockIn $stockIn): RedirectResponse
+    {
+        if (! $stockIn->isPending()) {
+            return back()->with('error', 'This stock-in has already been actioned.');
+        }
+
+        DB::transaction(function () use ($stockIn) {
+            $stockIn->update(['status' => 'approved']);
+
+            $product = $stockIn->product;
+            $product->quantity += $stockIn->quantity;
             if ($product->quantity > 0) {
                 $product->status = 'available';
             }
@@ -77,6 +116,25 @@ class StockInController extends Controller
         });
 
         return redirect()->route('admin.stocks.index')
-            ->with('success', 'Stock recorded successfully. Product quantity updated.');
+            ->with('success', 'Stock-in approved. Product quantity updated.');
+    }
+
+    public function reject(Request $request, StockIn $stockIn): RedirectResponse
+    {
+        if (! $stockIn->isPending()) {
+            return back()->with('error', 'This stock-in has already been actioned.');
+        }
+
+        $request->validate([
+            'rejection_note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $stockIn->update([
+            'status'         => 'rejected',
+            'rejection_note' => $request->rejection_note,
+        ]);
+
+        return redirect()->route('admin.stocks.index')
+            ->with('success', 'Stock-in rejected.');
     }
 }

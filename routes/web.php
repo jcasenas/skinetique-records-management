@@ -49,10 +49,16 @@ Route::middleware(AuthenticateEmployee::class)->group(function () {
         Route::put('/products/{product}',    [ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 
-        // Stocks
-        Route::get('/stocks',               [StockInController::class, 'index'])->name('stocks.index');
-        Route::post('/stocks',              [StockInController::class, 'store'])->name('stocks.store');
-        Route::post('/stocks/adjustments',  [StockAdjustmentController::class, 'store'])->name('stocks.adjustments.store');
+        // Stocks (all authenticated users can submit & view)
+        Route::get('/stocks',              [StockInController::class, 'index'])->name('stocks.index');
+        Route::post('/stocks',             [StockInController::class, 'store'])->name('stocks.store');
+        Route::post('/stocks/adjustments', [StockAdjustmentController::class, 'store'])->name('stocks.adjustments.store');
+
+        // Stock approval — owner only
+        Route::middleware(OwnerOnly::class)->group(function () {
+            Route::post('/stocks/{stockIn}/approve', [StockInController::class, 'approve'])->name('stocks.approve');
+            Route::post('/stocks/{stockIn}/reject',  [StockInController::class, 'reject'])->name('stocks.reject');
+        });
 
         // Customers
         Route::get('/customers',               [CustomerController::class, 'index'])->name('customers.index');

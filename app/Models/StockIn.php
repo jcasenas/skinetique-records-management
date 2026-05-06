@@ -15,6 +15,8 @@ class StockIn extends Model
         'employee_id',
         'quantity',
         'stock_in_date',
+        'status',
+        'rejection_note',
     ];
 
     protected function casts(): array
@@ -38,5 +40,20 @@ class StockIn extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejected';
     }
 }

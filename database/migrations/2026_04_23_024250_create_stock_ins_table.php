@@ -8,19 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('stock_ins', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->constrained('products');
-            $table->foreignId('supplier_id')->constrained('suppliers');
-            $table->foreignId('employee_id')->constrained('employees');
-            $table->integer('quantity');
-            $table->date('stock_in_date');
-            $table->timestamps();
+        Schema::table('stock_ins', function (Blueprint $table) {
+            $table->enum('status', ['pending', 'approved', 'rejected'])
+                  ->default('pending')
+                  ->after('stock_in_date');
+            $table->string('rejection_note', 255)
+                  ->nullable()
+                  ->after('status');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('stock_ins');
+        Schema::table('stock_ins', function (Blueprint $table) {
+            $table->dropColumn(['status', 'rejection_note']);
+        });
     }
 };
