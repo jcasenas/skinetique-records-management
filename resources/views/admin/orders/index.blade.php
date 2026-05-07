@@ -160,43 +160,103 @@
     .pagination a:hover { color: var(--primary); }
     .pagination .disabled { color: #ccc; pointer-events: none; }
 
-    /* ── Modal ── */
+    /* ══════════════════════════════
+       ORDER MODAL — improved layout
+    ══════════════════════════════ */
     .modal-backdrop {
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(60,20,40,.45);
+        background: rgba(60,20,40,.50);
         z-index: 200;
         align-items: center;
         justify-content: center;
         padding: 20px;
+        backdrop-filter: blur(2px);
     }
 
     .modal-backdrop.open { display: flex; }
 
     .modal {
         background: #fff;
-        border-radius: 18px;
+        border-radius: 20px;
         padding: 36px 40px;
         width: 100%;
-        max-width: 720px;
-        max-height: 90vh;
+        /* Wider max-width so the three columns have room to breathe */
+        max-width: 900px;
+        max-height: 92vh;
         overflow-y: auto;
-        box-shadow: 0 8px 48px rgba(94,32,57,.18);
+        box-shadow: 0 12px 60px rgba(94,32,57,.22);
+        position: relative;
     }
 
-    .modal-title { font-size: 22px; font-weight: 700; margin-bottom: 28px; letter-spacing: -0.02em; }
+    .modal-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        letter-spacing: -0.02em;
+        color: var(--text);
+    }
 
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .modal-subtitle {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 28px;
+    }
 
-    .form-group label { font-size: 13px; font-weight: 600; color: var(--text); }
+    /* ── Three-column form grid ── */
+    .order-form-grid {
+        display: grid;
+        /* Left: order details, Middle: product picker, Right: cart */
+        grid-template-columns: 1fr 1fr 1.2fr;
+        gap: 0;
+        border: 1.5px solid #f0e6ec;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .order-col {
+        padding: 22px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .order-col + .order-col {
+        border-left: 1.5px solid #f0e6ec;
+    }
+
+    .order-col-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f5edf1;
+        margin-bottom: 2px;
+    }
+
+    /* Cart column gets a tinted background to stand out */
+    .order-col-cart {
+        background: #fdf8fa;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+    .form-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text);
+        letter-spacing: .02em;
+    }
 
     .form-group input,
     .form-group select {
-        padding: 10px 14px;
+        padding: 9px 12px;
         border: 1.5px solid #e8d5dd;
-        border-radius: 10px;
-        font-size: 14px;
+        border-radius: 9px;
+        font-size: 13.5px;
         font-family: inherit;
         color: var(--text);
         background: #fff;
@@ -208,15 +268,108 @@
     .form-group select:focus { border-color: var(--primary); }
 
     .form-group input[readonly],
-    .form-group input[disabled] { background: #f9f3f6; color: var(--muted); cursor: default; }
+    .form-group input[disabled] {
+        background: #f9f3f6;
+        color: var(--muted);
+        cursor: default;
+    }
 
     #delivery-fee-row { display: none; }
 
+    /* ── Cart column internals ── */
+    .cart-items-wrap {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-height: 80px;
+    }
+
+    .cart-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        border: 1px solid #f0e6ec;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 12.5px;
+    }
+
+    .cart-item-name {
+        flex: 1;
+        font-weight: 600;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
+
+    .cart-item-meta {
+        color: var(--muted);
+        font-size: 11.5px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .cart-item-remove {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--muted);
+        padding: 2px 4px;
+        border-radius: 4px;
+        line-height: 1;
+        flex-shrink: 0;
+        transition: color .15s, background .15s;
+    }
+
+    .cart-item-remove:hover { color: #c0392b; background: #fce8ef; }
+    .cart-item-remove svg { width: 13px; height: 13px; pointer-events: none; display: block; }
+
+    .cart-empty {
+        font-size: 12.5px;
+        color: var(--muted);
+        padding: 20px 12px;
+        text-align: center;
+        background: #fff;
+        border: 1.5px dashed #e8d5dd;
+        border-radius: 9px;
+        line-height: 1.5;
+    }
+
+    .cart-totals {
+        border-top: 1.5px solid #f0e6ec;
+        padding-top: 10px;
+        margin-top: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12.5px;
+        color: var(--muted);
+    }
+
+    .cart-totals .total-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .cart-totals .grand {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-top: 4px;
+        padding-top: 8px;
+        border-top: 1px solid #f0e6ec;
+    }
+
+    /* ── Modal actions ── */
     .modal-actions {
         display: flex;
         justify-content: flex-end;
         gap: 12px;
-        margin-top: 28px;
+        margin-top: 24px;
         padding-top: 20px;
         border-top: 1px solid #f0e6ec;
     }
@@ -236,67 +389,6 @@
 
     .btn-ghost:hover { background: #f5edf1; color: var(--text); }
     .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 8px; }
-
-    /* ── Cart ── */
-    .cart-item-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
-
-    .cart-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #fdf5f8;
-        border: 1px solid #f0e6ec;
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-size: 13px;
-        gap: 10px;
-    }
-
-    .cart-item-name { flex: 1; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .cart-item-meta { color: var(--muted); font-size: 12px; white-space: nowrap; flex-shrink: 0; }
-
-    .cart-item-remove {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: var(--muted);
-        padding: 2px 4px;
-        border-radius: 4px;
-        line-height: 1;
-        transition: color .15s, background .15s;
-        flex-shrink: 0;
-    }
-
-    .cart-item-remove:hover { color: #c0392b; background: #fce8ef; }
-    .cart-item-remove svg { width: 14px; height: 14px; pointer-events: none; }
-
-    .cart-totals {
-        font-size: 13px;
-        color: var(--muted);
-        padding: 8px 0 0;
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-    }
-
-    .cart-totals .grand {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--primary);
-        margin-top: 4px;
-        padding-top: 6px;
-        border-top: 1px solid #f0e6ec;
-    }
-
-    .cart-empty {
-        font-size: 13px;
-        color: var(--muted);
-        padding: 16px;
-        text-align: center;
-        background: #fdf8fa;
-        border: 1.5px dashed #e8d5dd;
-        border-radius: 10px;
-    }
 </style>
 @endpush
 
@@ -402,17 +494,24 @@
 @endsection
 
 @push('scripts')
+
+{{-- ══════════════════════════════════════════
+     ADD ORDER MODAL — improved layout
+══════════════════════════════════════════ --}}
 <div class="modal-backdrop" id="orderModal">
     <div class="modal">
         <div class="modal-title">Order Form</div>
+        <div class="modal-subtitle">Fill in the order details, select products, then submit.</div>
 
         <form method="POST" action="{{ route('admin.orders.store') }}" id="orderForm">
             @csrf
 
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px 28px;">
+            <div class="order-form-grid">
 
-                {{-- Left column ── --}}
-                <div style="display:flex; flex-direction:column; gap:16px;">
+                {{-- ── Column 1: Order details ── --}}
+                <div class="order-col">
+                    <div class="order-col-title">Order Details</div>
+
                     <div class="form-group">
                         <label>Order ID</label>
                         <input type="text" value="{{ $nextOrderId }}" readonly>
@@ -421,7 +520,7 @@
                     <div class="form-group">
                         <label>Customer <span style="color:#c0392b">*</span></label>
                         <select name="customer_id" required>
-                            <option value="" disabled selected></option>
+                            <option value="" disabled selected>Select customer…</option>
                             @foreach ($customers as $customer)
                                 <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
                                     {{ $customer->full_name }}
@@ -433,7 +532,7 @@
                     <div class="form-group">
                         <label>Delivery Method <span style="color:#c0392b">*</span></label>
                         <select name="delivery_method_id" id="deliveryMethodSelect" required onchange="handleDeliveryChange(this)">
-                            <option value="" disabled selected></option>
+                            <option value="" disabled selected>Select method…</option>
                             @foreach ($deliveryMethods as $method)
                                 <option value="{{ $method->id }}" data-type="{{ $method->type }}" {{ old('delivery_method_id') == $method->id ? 'selected' : '' }}>
                                     {{ $method->label }}
@@ -443,7 +542,7 @@
                     </div>
 
                     <div class="form-group" id="delivery-fee-row">
-                        <label>Delivery Fee <span style="color:#c0392b">*</span></label>
+                        <label>Delivery Fee (₱) <span style="color:#c0392b">*</span></label>
                         <input type="number" name="delivery_fee" id="deliveryFeeInput" min="0" step="0.01" value="{{ old('delivery_fee', 0) }}" placeholder="0.00">
                     </div>
 
@@ -454,12 +553,14 @@
                     </div>
                 </div>
 
-                {{-- Middle column ── --}}
-                <div style="display:flex; flex-direction:column; gap:16px;">
+                {{-- ── Column 2: Product picker ── --}}
+                <div class="order-col">
+                    <div class="order-col-title">Add Products</div>
+
                     <div class="form-group">
                         <label>Product</label>
                         <select id="productSelect">
-                            <option value="" disabled selected></option>
+                            <option value="" disabled selected>Select product…</option>
                             @foreach ($products as $product)
                                 <option value="{{ $product->id }}"
                                     data-price="{{ $product->price }}"
@@ -476,26 +577,54 @@
                         <input type="number" id="qtyInput" min="1" value="1" placeholder="1">
                     </div>
 
-                    <button type="button" class="btn btn-primary btn-sm" onclick="addProduct()" style="align-self:flex-start; margin-top:4px;">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="addProduct()" style="align-self:flex-start; margin-top:2px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
                         Add to Cart
                     </button>
+
+                    {{-- Stock hint shown when product is selected --}}
+                    <div id="stockHint" style="font-size:12px; color:var(--muted); margin-top:auto; display:none;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:3px;">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span id="stockHintText"></span>
+                    </div>
                 </div>
 
-                {{-- Right column — cart ── --}}
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    <label style="font-size:13px; font-weight:600;">Cart</label>
-                    <div id="cartItemList" class="cart-item-list"></div>
-                    <div id="cartEmpty" class="cart-empty">No products added yet.</div>
+                {{-- ── Column 3: Cart ── --}}
+                <div class="order-col order-col-cart">
+                    <div class="order-col-title">
+                        Cart
+                        <span id="cartCount" style="font-weight:400; text-transform:none; letter-spacing:0; margin-left:4px;"></span>
+                    </div>
+
+                    <div class="cart-items-wrap" id="cartItemList">
+                        {{-- items injected by JS --}}
+                    </div>
+
+                    <div id="cartEmpty" class="cart-empty">
+                        No products added yet.<br>
+                        <span style="font-size:11.5px;">Select a product and click "Add to Cart".</span>
+                    </div>
+
                     <div id="cartTotals" class="cart-totals" style="display:none;"></div>
                 </div>
 
-            </div>
+            </div>{{-- /order-form-grid --}}
 
+            {{-- Hidden cart fields for form submission --}}
             <div id="hiddenCartFields"></div>
 
             <div class="modal-actions">
                 <button type="button" class="btn-ghost" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-primary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Submit Order
+                </button>
             </div>
         </form>
     </div>
@@ -504,13 +633,14 @@
 <script>
     let cart = [];
 
-    function openModal() { document.getElementById('orderModal').classList.add('open'); }
+    function openModal()  { document.getElementById('orderModal').classList.add('open'); }
     function closeModal() { document.getElementById('orderModal').classList.remove('open'); }
 
     document.getElementById('orderModal').addEventListener('click', function (e) {
         if (e.target === this) closeModal();
     });
 
+    // Show/hide delivery fee field
     function handleDeliveryChange(select) {
         const type     = select.options[select.selectedIndex].dataset.type;
         const feeRow   = document.getElementById('delivery-fee-row');
@@ -525,6 +655,22 @@
         }
         refreshCartDisplay();
     }
+
+    // Show stock hint when product selected
+    document.getElementById('productSelect').addEventListener('change', function () {
+        const opt   = this.options[this.selectedIndex];
+        const stock = parseInt(opt.dataset.qty) || 0;
+        const hint  = document.getElementById('stockHint');
+        const text  = document.getElementById('stockHintText');
+        if (this.value) {
+            hint.style.display = '';
+            text.textContent   = stock > 0
+                ? `${stock} unit${stock !== 1 ? 's' : ''} currently in stock.`
+                : 'No stock available for this product.';
+        } else {
+            hint.style.display = 'none';
+        }
+    });
 
     function addProduct() {
         const sel = document.getElementById('productSelect');
@@ -541,7 +687,10 @@
         const existing = cart.find(item => item.product_id === id);
         const newQty   = existing ? existing.quantity + qty : qty;
 
-        if (newQty > stock) { alert(`Only ${stock} units available for "${name}".`); return; }
+        if (newQty > stock) {
+            alert(`Only ${stock} unit${stock !== 1 ? 's' : ''} available for "${name}".`);
+            return;
+        }
 
         if (existing) {
             existing.quantity   = newQty;
@@ -553,6 +702,7 @@
         refreshCartDisplay();
         sel.selectedIndex = 0;
         document.getElementById('qtyInput').value = 1;
+        document.getElementById('stockHint').style.display = 'none';
     }
 
     function removeProduct(productId) {
@@ -561,27 +711,30 @@
     }
 
     function refreshCartDisplay() {
-        const listEl   = document.getElementById('cartItemList');
-        const emptyEl  = document.getElementById('cartEmpty');
-        const totalsEl = document.getElementById('cartTotals');
-        const hidden   = document.getElementById('hiddenCartFields');
+        const listEl    = document.getElementById('cartItemList');
+        const emptyEl   = document.getElementById('cartEmpty');
+        const totalsEl  = document.getElementById('cartTotals');
+        const hidden    = document.getElementById('hiddenCartFields');
+        const countEl   = document.getElementById('cartCount');
 
         if (cart.length === 0) {
             listEl.innerHTML       = '';
             emptyEl.style.display  = '';
             totalsEl.style.display = 'none';
             hidden.innerHTML       = '';
+            countEl.textContent    = '';
             return;
         }
 
         emptyEl.style.display  = 'none';
         totalsEl.style.display = '';
+        countEl.textContent    = `(${cart.length} item${cart.length !== 1 ? 's' : ''})`;
 
         listEl.innerHTML = cart.map(item => `
             <div class="cart-item">
                 <span class="cart-item-name" title="${item.name}">${item.name}</span>
-                <span class="cart-item-meta">×${item.quantity} @ ₱${item.unit_price.toFixed(2)} = ₱${item.line_total.toFixed(2)}</span>
-                <button type="button" class="cart-item-remove" onclick="removeProduct('${item.product_id}')" title="Remove">
+                <span class="cart-item-meta">×${item.quantity} &nbsp;₱${item.line_total.toFixed(2)}</span>
+                <button type="button" class="cart-item-remove" onclick="removeProduct('${item.product_id}')" title="Remove from cart">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
@@ -594,9 +747,9 @@
         const total    = subtotal + fee;
 
         totalsEl.innerHTML = `
-            <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span>₱${subtotal.toFixed(2)}</span></div>
-            ${fee > 0 ? `<div style="display:flex;justify-content:space-between;"><span>Delivery</span><span>₱${fee.toFixed(2)}</span></div>` : ''}
-            <div class="grand" style="display:flex;justify-content:space-between;"><span>Total</span><span>₱${total.toFixed(2)}</span></div>
+            <div class="total-row"><span>Subtotal</span><span>₱${subtotal.toFixed(2)}</span></div>
+            ${fee > 0 ? `<div class="total-row"><span>Delivery fee</span><span>₱${fee.toFixed(2)}</span></div>` : ''}
+            <div class="total-row grand"><span>Grand Total</span><span>₱${total.toFixed(2)}</span></div>
         `;
 
         hidden.innerHTML = cart.map((item, i) => `
