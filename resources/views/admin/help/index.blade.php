@@ -416,13 +416,11 @@
                 <a class="toc-item" data-section="returns" onclick="scrollTo('returns')">
                     <svg class="toc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
                     Returns
-                    <span class="new-badge">New</span>
                 </a>
 
                 <a class="toc-item" data-section="stock-adjustments" onclick="scrollTo('stock-adjustments')">
                     <svg class="toc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     Stock Adjustments
-                    <span class="new-badge">New</span>
                 </a>
 
                 <a class="toc-item" data-section="reports" onclick="scrollTo('reports')">
