@@ -42,6 +42,12 @@ class ReturnController extends Controller
             return back()->with('error', 'Return quantity exceeds the quantity originally ordered.');
         }
 
+        // Guard: can't refund more than what was paid
+        $totalPaid = $order->payments()->sum('amount');
+        if ($request->refund_amount > $totalPaid) {
+            return back()->with('error', 'Refund amount cannot exceed the total amount paid (₱' . number_format($totalPaid, 2) . ').');
+        }
+
         DB::transaction(function () use ($request, $order) {
             OrderReturn::create([
                 'order_id'      => $order->id,
