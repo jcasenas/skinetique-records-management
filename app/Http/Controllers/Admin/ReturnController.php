@@ -22,6 +22,11 @@ class ReturnController extends Controller
             'return_date'   => ['required', 'date', 'before_or_equal:today'],
         ]);
 
+         // Guard: order must have at least one payment
+        if ($order->payment_status === 'pending') {
+            return back()->with('error', 'Returns can only be recorded for orders that have at least one payment recorded.');
+        }
+
         // Guard: product must be in this order
         $orderLine = $order->orderLines->firstWhere('product_id', $request->product_id);
         if (! $orderLine) {

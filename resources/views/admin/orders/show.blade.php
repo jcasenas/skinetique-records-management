@@ -642,22 +642,34 @@
                         <span style="font-size:12px; color:var(--muted);">
                             {{ $order->returns->count() }} {{ Str::plural('return', $order->returns->count()) }}
                         </span>
-                        <button
-                            onclick="document.getElementById('returnModal').classList.add('open')"
-                            style="display:inline-flex; align-items:center; gap:5px; padding:5px 12px; background:#fff8e1; color:#856404; border:1.5px solid #fde5a0; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s;"
-                            onmouseover="this.style.background='#fde8a0'"
-                            onmouseout="this.style.background='#fff8e1'">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="1 4 1 10 7 10"/>
-                                <path d="M3.51 15a9 9 0 1 0 .49-4"/>
-                            </svg>
-                            Record Return
-                        </button>
+                        @if ($order->payment_status !== 'pending')
+                            <button
+                                onclick="document.getElementById('returnModal').classList.add('open')"
+                                style="display:inline-flex; align-items:center; gap:5px; padding:5px 12px; background:#fff8e1; color:#856404; border:1.5px solid #fde5a0; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s;"
+                                onmouseover="this.style.background='#fde8a0'"
+                                onmouseout="this.style.background='#fff8e1'">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="1 4 1 10 7 10"/>
+                                    <path d="M3.51 15a9 9 0 1 0 .49-4"/>
+                                </svg>
+                                Record Return
+                            </button>
+                        @else
+                            <span style="font-size:12px; color:var(--muted); font-style:italic;">
+                                Requires payment first
+                            </span>
+                        @endif
                     </div>
                 </div>
 
                 @if ($order->returns->isEmpty())
-                    <div class="empty-state">No returns recorded for this order.</div>
+                    <div class="empty-state">
+                        @if ($order->payment_status === 'pending')
+                            Returns cannot be recorded until at least one payment has been made.
+                        @else
+                            No returns recorded for this order.
+                        @endif
+                    </div>
                 @else
                     <div class="card-body" style="padding: 8px 22px;">
                         @foreach ($order->returns->sortByDesc('return_date') as $ret)
@@ -724,7 +736,6 @@
                     </div>
                 </div>
             @endif
-
         </div>
     </div>
 
