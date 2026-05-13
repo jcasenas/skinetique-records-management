@@ -850,7 +850,27 @@
                 </p>
                 <ul style="font-size:13px; color:var(--text); line-height:1.8; margin-bottom:24px; padding-left:20px;">
                     @foreach ($order->orderLines as $line)
-                        <li>{{ $line->product->name }} — <strong>−{{ $line->quantity }}</strong> units</li>
+                        @php
+                            $alreadyReturned = $order->returns
+                                ->where('product_id', $line->product_id)
+                                ->sum('quantity');
+                            $netQty = max(0, $line->quantity - $alreadyReturned);
+                        @endphp
+                        @if ($netQty > 0)
+                            <li>
+                                {{ $line->product->name }} — <strong>−{{ $netQty }}</strong> units
+                                @if ($alreadyReturned > 0)
+                                    <span style="font-size:11px; color:var(--muted); font-weight:400;">
+                                        ({{ $line->quantity }} ordered − {{ $alreadyReturned }} returned)
+                                    </span>
+                                @endif
+                            </li>
+                        @else
+                            <li style="color:var(--muted);">
+                                {{ $line->product->name }} — <strong>0</strong> units
+                                <span style="font-size:11px; font-weight:400;">(fully returned)</span>
+                            </li>
+                        @endif
                     @endforeach
                 </ul>
                 <div style="display:flex; justify-content:flex-end; gap:12px; padding-top:16px; border-top:1px solid #f0e6ec;">
