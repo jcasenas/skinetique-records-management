@@ -22,6 +22,14 @@ class StockAdjustmentController extends Controller
             'adjustment_date' => ['required', 'date', 'before_or_equal:today'],
         ]);
 
+        // Guard: cannot adjust more units than currently in stock
+        $product = Product::findOrFail($request->product_id);
+        if ($request->quantity > $product->quantity) {
+            return back()
+                ->withInput()
+                ->with('error', 'Adjustment quantity (' . $request->quantity . ') cannot exceed current stock of ' . $product->quantity . ' unit(s) for "' . $product->name . '".');
+        }
+
         // Save as pending — quantity is NOT deducted until owner approves
         StockAdjustment::create([
             'product_id'      => $request->product_id,
